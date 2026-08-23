@@ -35,18 +35,25 @@ def url_handler(url: str | urllib.parse.ParseResult):
 
     hostname = url.hostname
 
+    # urlparse() returns None as the hostname for anything without a netloc:
+    # mailto:, tel:, relative paths, empty strings, malformed links... Posts are
+    # full of those and there is nothing to rewrite in them, so hand the URL
+    # back untouched.
+    #
+    # Without this guard the comparisons below raise AttributeError on None,
+    # which takes down the whole page the post appears in. See issue #5.
+    if not hostname:
+        return url.geturl()
+
     # Redirects links can have malformed URLs such as https://href.li/?http://
     # As those are not proper links by themselves, we'll just use the entire
     # redirect link.
-    try:
-        if hostname.endswith("href.li"):
-            return url_handler(url.query)
-        elif hostname.endswith("t.umblr.com"):
-            parsed_query = urllib.parse.parse_qs(url.query)
-            if redirect_url := parsed_query.get("z"):
-                return url_handler(redirect_url[0])
-    except AttributeError:
-        pass
+    if hostname.endswith("href.li"):
+        return url_handler(url.query)
+    elif hostname.endswith("t.umblr.com"):
+        parsed_query = urllib.parse.parse_qs(url.query)
+        if redirect_url := parsed_query.get("z"):
+            return url_handler(redirect_url[0])
 
     if hostname.endswith("tumblr.com"):
         if hostname.endswith(".media.tumblr.com"):
@@ -82,7 +89,6 @@ def url_handler(url: str | urllib.parse.ParseResult):
                 return f"{url.path}"
 
     return url.geturl()
-
 
 def create_reblog_attribution_link(post):
     """Creates an attribution of who the author reblogged the post from"""
