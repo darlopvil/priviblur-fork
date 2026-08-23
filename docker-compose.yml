@@ -14,14 +14,18 @@ services:
     networks:
       - priviblur-internal
     depends_on:
-      - priviblur-redis
+      priviblur-redis:
+        condition: service_healthy
 
-  # Cache. Opcional en teoria, pero sin ella cada peticion va a Tumblr.
+    # Cache. Opcional en teoria, pero sin ella cada peticion va a Tumblr.
   priviblur-redis:
     image: redis:7-alpine
-    # Solo cache: sin persistencia a disco
+    # Solo cache: sin persistencia a disco, asi que no hace falta volumen
     command: redis-server --loglevel warning --save "" --appendonly no
     restart: unless-stopped
+    # Se ejecuta directamente como el usuario redis para saltarse el chown del
+    # entrypoint, que necesita CAP_CHOWN y falla con cap_drop: ALL
+    user: "redis"
     read_only: true
     tmpfs:
       - /data
@@ -29,6 +33,12 @@ services:
       - no-new-privileges:true
     cap_drop:
       - ALL
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
     networks:
       - priviblur-internal
 
