@@ -3,7 +3,7 @@ from typing import Optional, NamedTuple
 # Used for cache busting
 # Applied when .to_json_serialisable() is called
 # Removed from serialized back with from_json()
-VERSION = 5
+VERSION = 6
 
 
 class Cursor(NamedTuple):

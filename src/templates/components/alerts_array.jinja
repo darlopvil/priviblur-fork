@@ -1,9 +1,9 @@
 <div class="alerts">
     {% if timeline.signposts is defined %}
         {% for element in timeline.signposts %}
-            {% if element.title == "Hold your horses!"%}
+            {% if element.kind == "restricted" %}
                 {% include "components/alerts/restricted_content_alert.jinja"%}
-            {% elif element.title == "Woah, hang on there."%}
+            {% elif element.kind == "partially_restricted" %}
                 {% include "components/alerts/partial_restricted_content_alert.jinja"%}
             {% else %}
                 {% include "components/signpost.jinja"%}

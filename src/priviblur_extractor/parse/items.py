@@ -348,6 +348,17 @@ class LikeNoteParser:
 
 
 class SignpostParser:
+    # Tumblr does not expose any structural field to tell signpost types apart:
+    # the API only gives us the display strings. Matching on them is fragile
+    # (a copy change or a localised response breaks it) so the strings live
+    # here as named constants rather than buried in a template, and unknown
+    # signposts are logged so we find out when Tumblr changes them instead of
+    # silently falling back. See issue #11.
+    KNOWN_TITLES = {
+        "Hold your horses!": "restricted",
+        "Woah, hang on there.": "partially_restricted",
+    }
+
     def __init__(self, target) -> None:
         self.target = target
 
@@ -357,9 +368,21 @@ class SignpostParser:
             return cls(initial_data).parse()
 
     def parse(self):
+        title = self.target["display"]["title"]
+        kind = self.KNOWN_TITLES.get(title, "generic")
+
+        if kind == "generic":
+            logger.warning(
+                "Unknown signpost title %r. It will render as a generic signpost. "
+                "Raw object: %r",
+                title,
+                self.target,
+            )
+
         return models.misc.Signpost(
-            title=self.target["display"]["title"],
+            title=title,
             description=helpers.dig_dict(self.target, ("resources", "description")),
+            kind=kind,
         )
 
 
