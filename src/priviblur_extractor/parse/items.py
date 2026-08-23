@@ -122,9 +122,14 @@ class PostParser:
         id = self.target["id"]
 
         note_count = self.target.get("noteCount")
-        reply_count = self.target.get("replyCount")
-        reblog_count = self.target.get("reblogCount")
-        like_count = self.target.get("likeCount")
+
+        # Tumblr omits these counters in some contexts (posts with notes
+        # disabled, certain timeline types). They used to be compared against 0
+        # right below, which raised TypeError on None and took the whole parse
+        # down. See issue #6.
+        reply_count = self.target.get("replyCount") or 0
+        reblog_count = self.target.get("reblogCount") or 0
+        like_count = self.target.get("likeCount") or 0
 
         default_note_viewer_tab = "replies"
 
@@ -133,7 +138,9 @@ class PostParser:
         # until we find an not empty tab. If everything is empty then we default to replies
 
         for tab, counts in zip(
-            ("replies", "reblogs", "likes"), (reply_count, reblog_count, like_count)
+            ("replies", "reblogs", "likes"),
+            (reply_count, reblog_count, like_count),
+            strict=True,
         ):
             if counts > 0:
                 default_note_viewer_tab = tab
