@@ -169,6 +169,18 @@ msgstr "Priviblur has been ratelimited by Tumblr"
 msgid "tumblr_error_ratelimit_reached_description"
 msgstr "Please try again later"
 
+msgid "tumblr_error_authentication_error_heading"
+msgstr "Tumblr rejected this instance's credentials"
+
+msgid "tumblr_error_authentication_error_description"
+msgstr "This is a problem with the instance, not with you. If you run it, check the authorization token."
+
+msgid "tumblr_error_unexpected_response_heading"
+msgstr "Tumblr returned an unexpected response"
+
+msgid "tumblr_error_unexpected_response_description"
+msgstr "Tumblr replied with HTTP status {0} and something that was not JSON. This can be a temporary Tumblr incident, a rate limit, or this instance being blocked. The instance logs have the details."
+
 msgid "priviblur_error_page_title"
 msgstr "Error"
 

@@ -37,6 +37,14 @@ class TumblrLoginRequiredError(TumblrErrorResponse):
 class TumblrPasswordRequiredBlogError(TumblrErrorResponse):
     pass
 
+class TumblrAuthenticationError(TumblrErrorResponse):
+    """Tumblr rejected our credentials.
+
+    Tumblr reuses internal code 0 as a catch-all, so this is told apart from
+    TumblrBlogNotFoundError by the HTTP status. See issue #3.
+    """
+
+    pass
 
 class TumblrNon200NorJSONResponse(Exception):
     def __init__(self, status_code):

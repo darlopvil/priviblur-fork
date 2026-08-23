@@ -154,6 +154,16 @@ class TumblrAPI:
                         message, code, details, internal_code
                     )
                 case 0:
+                    # Tumblr reuses internal code 0 as a catch-all: it comes
+                    # back both for missing blogs and for rejected credentials.
+                    # Discriminating on it alone reported "blog not found" on
+                    # every single page when the bearer token stopped working.
+                    # See issue #3.
+                    if response.status == 401:
+                        raise exceptions.TumblrAuthenticationError(
+                            message, code, details, internal_code
+                        )
+
                     raise exceptions.TumblrBlogNotFoundError(message, code, details, internal_code)
                 case _:
                     logger.error(f"Unknown tumblr internal error code: {internal_code}")

@@ -76,6 +76,24 @@ async def tumblr_error_unknown_blog(request, exception):
     )
 
 
+@extractor_errors.register(priviblur_exceptions.TumblrAuthenticationError)
+async def tumblr_error_authentication(request, exception):
+    return await request.app.ctx.render(
+        "misc/msg_error",
+        context={
+            "app": request.app,
+            "exception": exception,
+            "error_heading": request.app.ctx.translate(
+                request.ctx.language, "tumblr_error_authentication_error_heading"
+            ),
+            "error_description": request.app.ctx.translate(
+                request.ctx.language, "tumblr_error_authentication_error_description"
+            ),
+        },
+        status=502,
+    )
+
+
 @extractor_errors.register(priviblur_exceptions.TumblrNon200NorJSONResponse)
 async def tumblr_error_debug_non_json_response_error(request, exception):
     return await request.app.ctx.render(
@@ -83,10 +101,16 @@ async def tumblr_error_debug_non_json_response_error(request, exception):
         context={
             "app": request.app,
             "exception": exception,
-            "error_heading": f"Non 200 status code. Tumblr returned {exception.status_code} ",
-            "error_description": "Priviblur might have been ratelimited by Tumblr. Please try again later.",
+            "error_heading": request.app.ctx.translate(
+                request.ctx.language, "tumblr_error_unexpected_response_heading"
+            ),
+            "error_description": request.app.ctx.translate(
+                request.ctx.language,
+                "tumblr_error_unexpected_response_description",
+                substitution=str(exception.status_code),
+            ),
         },
-        status=500,
+        status=502,
     )
 
 
