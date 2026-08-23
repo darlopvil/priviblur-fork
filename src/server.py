@@ -60,8 +60,20 @@ app.ctx.create_user_friendly_error_message = error_handlers.create_user_friendly
 async def initialize(app):
     priviblur_backend = app.ctx.PRIVIBLUR_CONFIG.backend
 
+    main_timeout = aiohttp.ClientTimeout(
+        total=priviblur_backend.main_response_timeout,
+    sock_connect=priviblur_backend.main_connect_timeout,
+    sock_read=priviblur_backend.main_read_timeout,
+    )
+
+    image_timeout = aiohttp.ClientTimeout(
+        total=priviblur_backend.image_response_timeout,
+        sock_connect=priviblur_backend.image_connect_timeout,
+        sock_read=priviblur_backend.image_read_timeout,
+    )
+
     app.ctx.TumblrAPI = await priviblur_extractor.TumblrAPI.create(
-        main_request_timeout=priviblur_backend.main_response_timeout, json_loads=orjson.loads
+        main_request_timeout=main_timeout, json_loads=orjson.loads
     )
 
     media_request_headers = {
@@ -75,10 +87,11 @@ async def initialize(app):
         "referer": "https://www.tumblr.com/",
     }
 
+
     # TODO set pool size for image requests
 
-    def create_image_client(url, timeout=priviblur_backend.image_response_timeout):
-        timeout = aiohttp.ClientTimeout(timeout)
+    
+    def create_image_client(url, timeout=image_timeout):
         return aiohttp.ClientSession(url, headers=media_request_headers, timeout=timeout)
 
     app.ctx.Media64Client = create_image_client("https://64.media.tumblr.com")
@@ -93,7 +106,7 @@ async def initialize(app):
 
     app.ctx.MediaGenericClient = aiohttp.ClientSession(
         headers=media_request_headers,
-        timeout=aiohttp.ClientTimeout(priviblur_backend.image_response_timeout),
+        timeout=image_timeout,
     )
 
     app.ctx.AudioClient = create_image_client("https://a.tumblr.com")
@@ -105,7 +118,7 @@ async def initialize(app):
     app.ctx.TumblrAtClient = aiohttp.ClientSession(
         "https://at.tumblr.com",
         headers={"user-agent": priviblur_extractor.TumblrAPI.USER_AGENT},
-        timeout=aiohttp.ClientTimeout(priviblur_backend.main_response_timeout),
+        timeout=main_timeout,
     )
 
     # Initialize database

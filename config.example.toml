@@ -41,11 +41,26 @@
 
 # # Controls behaviors pertaining to the way Priviblur requests Tumblr
 # [priviblur_backend]
-    # # Timeout for requests to Tumblr's API
+    # # Total timeout for requests to Tumblr's API, in seconds.
+    # # Covers the whole operation: connecting, sending and reading the response.
     # main_response_timeout = 10
 
-    # # Timeout for fetching image responses from Tumblr
+    # # Total timeout for fetching image responses from Tumblr, in seconds.
     # image_response_timeout = 30
+
+    # # Optional per-phase timeouts, in seconds. Both are unset by default,
+    # # meaning only the total above applies.
+    # #
+    # # Splitting them lets Priviblur fail fast on an unreachable host while
+    # # still giving a slow but working response time to finish. A large blog
+    # # can take over a second to arrive on a good day.
+    # #
+    # # connect: giving up while establishing the connection
+    # # read: giving up between two chunks of data
+    # main_connect_timeout = 5
+    # main_read_timeout = 30
+    # image_connect_timeout = 5
+    # image_read_timeout = 60
 
 
 # # Controls default user preferences

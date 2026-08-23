@@ -82,9 +82,15 @@ class TumblrAPI:
 
     @classmethod
     async def create(cls, client=None, main_request_timeout=10, json_loads=json.loads):
-        """Creates a Tumblr API instance with the given client. Automatically creates a client obj if not given."""
+        """Creates a Tumblr API instance with the given client. Automatically creates a client obj if not given.
+
+        main_request_timeout accepts either a number, treated as the total
+        timeout, or an aiohttp.ClientTimeout for full control over the
+        connect/read/total phases.
+        """
         if not client:
-            main_request_timeout = aiohttp.ClientTimeout(main_request_timeout)
+            if not isinstance(main_request_timeout, aiohttp.ClientTimeout):
+                main_request_timeout = aiohttp.ClientTimeout(total=main_request_timeout)
 
             # See create_tumblr_ssl_context(): the ALPN extension aiohttp adds
             # by default makes Automattic's edge drop the connection (issue #1)
@@ -93,7 +99,7 @@ class TumblrAPI:
             client = aiohttp.ClientSession(
                 "https://www.tumblr.com",
                 headers=cls.DEFAULT_HEADERS,
-                timeout=main_request_timeout,  # TODO allow fine-tuning the different types of timeouts
+                timeout=main_request_timeout,
                 connector=connector,
             )
 
