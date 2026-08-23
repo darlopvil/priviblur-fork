@@ -70,14 +70,14 @@ class ReblogNote(NamedTuple):
 
         json_serializable["blog"] = json_serializable["blog"].to_json_serialisable()
         if self.date:
-            json_serializable["date"] = self.date.replace(tzinfo=datetime.timezone.utc).timestamp()
+            json_serializable["date"] = self.date.timestamp()
 
         return json_serializable
 
     @classmethod
     def from_json(cls, json):
         if json["date"] is not None:
-            json["date"] = datetime.datetime.utcfromtimestamp(json["date"])
+            json["date"] = datetime.datetime.fromtimestamp(json["date"], datetime.timezone.utc)
 
         if json["blog"]:
             json["blog"] = blog.Blog.from_json(json["blog"])
@@ -167,7 +167,7 @@ class PostTrail(NamedTuple):
             json["blog"] = blog.BrokenBlog.from_json(json["blog"])
 
         if json["date"] is not None:
-            json["date"] = datetime.datetime.utcfromtimestamp(json["date"])
+            json["date"] = datetime.datetime.fromtimestamp(json["date"], datetime.timezone.utc)
 
         return cls(**json)
 
@@ -221,7 +221,7 @@ class Post(NamedTuple):
     @classmethod
     def from_json(cls, json):
         if json["date"] is not None:
-            json["date"] = datetime.datetime.utcfromtimestamp(json["date"])
+            json["date"] = datetime.datetime.fromtimestamp(json["date"], datetime.timezone.utc)
 
         trails = []
         for trail in json["trail"]:

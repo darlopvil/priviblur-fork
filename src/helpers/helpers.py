@@ -148,7 +148,10 @@ def prefix_slash_in_url_if_missing(url):
 
 async def create_poll_callback(ctx, blog, post_id):
     async def poll_callable(poll_id, expiration_timestamp):
-        current_timestamp = round(datetime.datetime.utcnow().timestamp())
+        # utcnow() returns a naive datetime, and .timestamp() interprets naive
+        # values as local time: with a non-UTC container TZ the comparison was
+        # off by the timezone offset and polls expired early. See issue #12.
+        current_timestamp = round(datetime.datetime.now(datetime.timezone.utc).timestamp())
         expired = current_timestamp > expiration_timestamp
 
         return await get_poll_results(ctx, blog, post_id, poll_id, expired=expired)
