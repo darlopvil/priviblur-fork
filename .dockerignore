@@ -1,0 +1,26 @@
+# Entornos virtuales
+.venv/
+venv/
+
+# Cache de Python
+__pycache__/
+**/__pycache__/
+*.pyc
+*.pyo
+.ruff_cache/
+
+# Despliegue y configuracion local
+deploy/
+docker-compose*.yml
+config.toml
+*.log
+
+# Cosas de repositorio que no pintan nada en la imagen
+.github/
+screenshots/
+instances.md
+requirements-dev.txt
+
+# OJO: .git/ NO se excluye a proposito.
+# docker/Dockerfile hace COPY ./.git/ para sacar el hash del commit en
+# src/version.py. Si se excluye, el build falla. Ver issue #16.

@@ -1,28 +1,45 @@
 services:
   priviblur:
-    image: quay.io/syeopite/priviblur:latest
-    container_name: priviblur
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    image: priviblur-fork:local
     restart: unless-stopped
-    ports:
-      - "127.0.0.1:8000:8000" # Replace with "8000:8000" if you don't use a reverse proxy
+    environment:
+      # El fichero se monta como directorio a proposito: los bind mounts de
+      # fichero suelto se rompen con los editores que guardan de forma atomica
+      - PRIVIBLUR_CONFIG_LOCATION=/config/config.toml
     volumes:
-      - ./config.toml:/priviblur/config.toml:Z,ro
+      - ./deploy:/config:ro
+    networks:
+      - priviblur-internal
+    depends_on:
+      - priviblur-redis
 
-  # Redis is technically optional but is used for caching (remember to edit the config.toml file to actually make use of caching)
-  # Partially taken from https://github.com/zedeus/nitter/blob/b62d73dbd373f08af07c7a79efcd790d3bc1a49c/docker-compose.yml#L27-L44
+  # Cache. Opcional en teoria, pero sin ella cada peticion va a Tumblr.
   priviblur-redis:
-    image: redis:6.2-alpine
-    container_name: priviblur-redis
-    command: redis-server --loglevel warning
-    volumes:
-      - priviblur-redis:/data
+    image: redis:7-alpine
+    # Solo cache: sin persistencia a disco
+    command: redis-server --loglevel warning --save "" --appendonly no
     restart: unless-stopped
-    user: "999:1000"
     read_only: true
+    tmpfs:
+      - /data
     security_opt:
       - no-new-privileges:true
     cap_drop:
       - ALL
+    networks:
+      - priviblur-internal
 
-volumes:
-  priviblur-redis:
+networks:
+  priviblur-internal:
+    driver: bridge
+
+# Este fichero NO publica puertos al host: asume proxy inverso.
+# Para acceso directo, crea un docker-compose.override.yml con:
+#
+#   services:
+#     priviblur:
+#       ports:
+#         - "127.0.0.1:8000:8000"

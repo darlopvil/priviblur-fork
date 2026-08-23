@@ -1,6 +1,8 @@
 venv/
+.venv/
 __pycache__
 *.egg-info/
 build/
 config.toml
+docker-compose.override.yml
 *.mo
