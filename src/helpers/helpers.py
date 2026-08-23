@@ -8,30 +8,28 @@ import dominate.tags
 from ..cache import get_poll_results
 
 
-def is_tumblr_url(url: str | urllib.parse.ParseResult):
+def is_tumblr_url(url: str | urllib.parse.ParseResult) -> bool:
     """Checks URL is a tumblr URL"""
     if isinstance(url, str):
         url = urllib.parse.urlparse(url)
-    elif isinstance(url, urllib.parse.ParseResult):
-        url = url
-    else:
-        raise False
+    elif not isinstance(url, urllib.parse.ParseResult):
+        raise TypeError(
+            f"Expected a str or urllib.parse.ParseResult, got {type(url).__name__}"
+        )
 
     hostname = url.hostname
 
-    if hostname and (hostname == "tumblr.com" or hostname.endswith(".tumblr.com")):
-        return True
-    return False
+    return bool(hostname and (hostname == "tumblr.com" or hostname.endswith(".tumblr.com")))
 
 
 def url_handler(url: str | urllib.parse.ParseResult):
     """Change URLs found in posts to privacy-friendly alternatives"""
     if isinstance(url, str):
         url = urllib.parse.urlparse(url)
-    elif isinstance(url, urllib.parse.ParseResult):
-        url = url
-    else:
-        raise ValueError
+    elif not isinstance(url, urllib.parse.ParseResult):
+        raise TypeError(
+            f"Expected a str or urllib.parse.ParseResult, got {type(url).__name__}"
+        )
 
     hostname = url.hostname
 
