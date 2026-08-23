@@ -78,7 +78,22 @@ def translate(
     gettext_instance = app.ctx.LANGUAGES[language].priviblur_translations
 
     if number is not None:
-        translated = gettext_instance.ngettext(id, f"{id}_plural", number)
+        plural_id = f"{id}_plural"
+        translated = gettext_instance.ngettext(id, plural_id, number)
+
+        # Babel compiles untranslated plural forms using the msgid itself as
+        # the translation, so the entry exists in the catalogue with content.
+        # ngettext therefore never raises KeyError and the English fallback,
+        # although correctly configured, is never consulted: the raw
+        # identifier ends up rendered in the interface.
+        #
+        # Detecting it means comparing the result against the identifiers.
+        # This is about untranslated forms, not about how many forms a
+        # language declares: Japanese has a single plural form and translates
+        # it, so it never reaches this branch. See issue #8.
+        if translated in (id, plural_id) and language != "en_US":
+            english_instance = app.ctx.LANGUAGES["en_US"].priviblur_translations
+            translated = english_instance.ngettext(id, plural_id, number)
     else:
         translated = gettext_instance.gettext(id)
 
