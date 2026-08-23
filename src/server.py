@@ -65,7 +65,8 @@ async def initialize(app):
     )
 
     media_request_headers = {
-        "user-agent": priviblur_extractor.TumblrAPI.DEFAULT_HEADERS["user-agent"],
+        # See TumblrAPI.USER_AGENT: mandatory, not cosmetic (issue #2)
+        "user-agent": priviblur_extractor.TumblrAPI.USER_AGENT,
         "accept-encoding": "gzip, deflate",
         "accept": "image/avif,image/webp,image/png,image/svg+xml,image/*;q=0.8,*/*;q=0.5",
         "accept-language": "en-US,en;q=0.5",
@@ -103,7 +104,7 @@ async def initialize(app):
 
     app.ctx.TumblrAtClient = aiohttp.ClientSession(
         "https://at.tumblr.com",
-        headers={"user-agent": priviblur_extractor.TumblrAPI.DEFAULT_HEADERS["user-agent"]},
+        headers={"user-agent": priviblur_extractor.TumblrAPI.USER_AGENT},
         timeout=aiohttp.ClientTimeout(priviblur_backend.main_response_timeout),
     )
 

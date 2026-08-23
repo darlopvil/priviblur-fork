@@ -52,9 +52,26 @@ def create_tumblr_ssl_context() -> ssl.SSLContext:
 class TumblrAPI:
     config = rconf
 
+    # Automattic's edge blocks aiohttp's default user-agent
+    # ("Python/3.x aiohttp/3.y") with a 403 served by nginx, before the request
+    # ever reaches the API.
+    #
+    # This header is NOT cosmetic and must not be dropped as "unnecessary":
+    # every session that talks to Tumblr has to send a browser user-agent.
+    # Measured on the same machine, same IP, same minute:
+    #
+    #     aiohttp default UA  -> 403, nginx HTML error page
+    #     Python-urllib/3.x   -> 200
+    #     this Firefox UA     -> 200
+    #
+    # Exposed as its own constant so other clients (the media proxies in
+    # server.py) can reuse it without reaching into DEFAULT_HEADERS, which
+    # also carries the authorization token. See issue #2.
+    USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:136.0) Gecko/20100101 Firefox/136.0"
+
     DEFAULT_HEADERS = {
         "accept": "application/json;format=camelcase",
-        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:136.0) Gecko/20100101 Firefox/136.0",
+        "user-agent": USER_AGENT,
         "accept-encoding": "gzip, deflate",
         "te": "trailers",
         "connection": "keep-alive",
