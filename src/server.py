@@ -73,7 +73,9 @@ async def initialize(app):
     )
 
     app.ctx.TumblrAPI = await priviblur_extractor.TumblrAPI.create(
-        main_request_timeout=main_timeout, json_loads=orjson.loads
+        main_request_timeout=main_timeout,
+        json_loads=orjson.loads,
+        authorization_token=priviblur_backend.authorization_token,
     )
 
     media_request_headers = {

@@ -69,6 +69,16 @@ class TumblrAPI:
     # also carries the authorization token. See issue #2.
     USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:136.0) Gecko/20100101 Firefox/136.0"
 
+    # Public bearer token belonging to Tumblr's own web client. It is not a
+    # private credential: it is identical for everyone and can be read straight
+    # out of tumblr.com's JavaScript. There is nothing secret to leak here.
+    #
+    # What it is, is static and shared. If Automattic ever invalidates it,
+    # every instance on the planet stops working at the same time. Being able
+    # to override it from the config turns an urgent rebuild into editing a
+    # file. See issue #14.
+    DEFAULT_AUTHORIZATION_TOKEN = "aIcXSOoTtqrzR8L8YEIOmBeW94c3FmbSNSWAUbxsny9KKx5VFh"
+
     DEFAULT_HEADERS = {
         "accept": "application/json;format=camelcase",
         "user-agent": USER_AGENT,
@@ -76,21 +86,39 @@ class TumblrAPI:
         "te": "trailers",
         "connection": "keep-alive",
         "referer": "https://www.tumblr.com/",
-        # Authorization token
-        "authorization": "Bearer aIcXSOoTtqrzR8L8YEIOmBeW94c3FmbSNSWAUbxsny9KKx5VFh",
+        "authorization": f"Bearer {DEFAULT_AUTHORIZATION_TOKEN}",
     }
 
     @classmethod
-    async def create(cls, client=None, main_request_timeout=10, json_loads=json.loads):
+    async def create(
+        cls,
+        client=None,
+        main_request_timeout=10,
+        json_loads=json.loads,
+        authorization_token=None,
+    ):
         """Creates a Tumblr API instance with the given client. Automatically creates a client obj if not given.
 
         main_request_timeout accepts either a number, treated as the total
         timeout, or an aiohttp.ClientTimeout for full control over the
         connect/read/total phases.
+
+        authorization_token overrides the bearer token, with or without the
+        "Bearer " prefix. Falls back to DEFAULT_AUTHORIZATION_TOKEN.
         """
         if not client:
             if not isinstance(main_request_timeout, aiohttp.ClientTimeout):
                 main_request_timeout = aiohttp.ClientTimeout(total=main_request_timeout)
+
+            # A copy, so overriding the token never mutates the class attribute
+            # shared by every instance
+            headers = dict(cls.DEFAULT_HEADERS)
+
+            if authorization_token:
+                if authorization_token.startswith("Bearer "):
+                    headers["authorization"] = authorization_token
+                else:
+                    headers["authorization"] = f"Bearer {authorization_token}"
 
             # See create_tumblr_ssl_context(): the ALPN extension aiohttp adds
             # by default makes Automattic's edge drop the connection (issue #1)
@@ -98,7 +126,7 @@ class TumblrAPI:
 
             client = aiohttp.ClientSession(
                 "https://www.tumblr.com",
-                headers=cls.DEFAULT_HEADERS,
+                headers=headers,
                 timeout=main_request_timeout,
                 connector=connector,
             )
@@ -174,6 +202,14 @@ class TumblrAPI:
                     raise exceptions.TumblrLoginRequiredError(message, code, details, internal_code)
                 case 4013:
                     raise exceptions.TumblrPasswordRequiredBlogError(
+                        message, code, details, internal_code
+                    )
+                case 1013:
+                    # "Unable to authorize": the token is present but rejected.
+                    # This is what a stale or invalidated bearer looks like,
+                    # as opposed to code 0 below, which is what a missing
+                    # authorization header looks like. See issues #3 and #14.
+                    raise exceptions.TumblrAuthenticationError(
                         message, code, details, internal_code
                     )
                 case 0:

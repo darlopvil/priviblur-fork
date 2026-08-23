@@ -16,6 +16,9 @@ class PriviblurBackendConfig(NamedTuple):
         image_connect_timeout: As above, for media requests.
         image_read_timeout: As above, for media requests.
 
+        authorization_token: Overrides the bearer token sent to Tumblr's API.
+            Unset means using TumblrAPI.DEFAULT_AUTHORIZATION_TOKEN.
+
     The total timeout covers the whole operation. Splitting it lets a slow but
     working response finish while still failing fast on an unreachable host.
     """
@@ -28,3 +31,5 @@ class PriviblurBackendConfig(NamedTuple):
 
     image_connect_timeout: Optional[int] = None
     image_read_timeout: Optional[int] = None
+
+    authorization_token: Optional[str] = None

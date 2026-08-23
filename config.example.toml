@@ -62,6 +62,17 @@
     # image_connect_timeout = 5
     # image_read_timeout = 60
 
+    # # Bearer token sent to Tumblr's API. Unset uses the built-in one.
+    # #
+    # # The built-in token is the public bearer of Tumblr's own web client: it
+    # # is the same for everybody and is not a private credential. It is also
+    # # static, so if Automattic ever invalidates it every instance breaks at
+    # # once. This option exists so that can be fixed by editing a file instead
+    # # of rebuilding.
+    # #
+    # # The "Bearer " prefix is optional.
+    # authorization_token = "..."
+
 
 # # Controls default user preferences
 # [default_user_preferences]
