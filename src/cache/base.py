@@ -2,6 +2,7 @@ import abc
 import typing
 
 import orjson
+import redis.exceptions
 
 from .. import priviblur_extractor
 
@@ -125,7 +126,19 @@ class AccessCache(abc.ABC):
     async def get(self):
         """Retrieves some data from either the cache or Tumblr itself"""
         if self.ctx.CacheDb:
-            return await self.get_cached()
-        else:
-            initial_results = await self.fetch()
-            return self.parse(initial_results)
+            try:
+                return await self.get_cached()
+            except redis.exceptions.RedisError as e:
+                # The cache is optional by definition, so a Redis failure must
+                # never take the whole request down. Before this guard, Redis
+                # dying while the app was already running turned every single
+                # request into a 500: server.py only pings Redis once at
+                # startup, so ctx.CacheDb stayed truthy forever. See issue #10.
+                self.ctx.LOGGER.warning(
+                    "Cache: Redis error (%s: %s). Serving this request without cache.",
+                    type(e).__name__,
+                    e,
+                )
+
+        initial_results = await self.fetch()
+        return self.parse(initial_results)
