@@ -1,7 +1,7 @@
 {% extends "base.jinja" %}
 {% block head %}
-<link rel="stylesheet" type="text/css" href="/assets/css/settings.css?v={{app.ctx.CURRENT_COMMIT}}">
-<script src="/assets/js/settings.js?v={{app.ctx.CURRENT_COMMIT}}" defer></script>
+<link rel="stylesheet" type="text/css" href="/assets/css/settings.css?v={{app.ctx.ASSET_VERSION}}">
+<script src="/assets/js/settings.js?v={{app.ctx.ASSET_VERSION}}" defer></script>
 
 <script id="setting_locale_strings" type="application/json">
 {

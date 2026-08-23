@@ -2,7 +2,7 @@
 {% from 'macros/insert_content_list.jinja' import insert_content_list with context %}
 {% from 'macros/add_query.jinja' import add_query  %}
 {% block head %}
-    <link rel="stylesheet" type="text/css" href="/assets/css/timeline.css?v={{app.ctx.CURRENT_COMMIT}}">
+    <link rel="stylesheet" type="text/css" href="/assets/css/timeline.css?v={{app.ctx.ASSET_VERSION}}">
     <link rel="alternate" type="application/rss+xml" href="{{request.path}}/rss{{add_query(request.query_string)}}"/>
 {% endblock %}
 {% block title %}{{title}}{% endblock%}

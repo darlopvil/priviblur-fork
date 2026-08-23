@@ -1,7 +1,7 @@
 {% extends "base.jinja" %}
 {% block head %}
-<link rel="preload" href="/assets/css/blog.css?v={{app.ctx.CURRENT_COMMIT}}" as="style">
-<link rel="stylesheet" type="text/css" href="/assets/css/blog.css?v={{app.ctx.CURRENT_COMMIT}}">
+<link rel="preload" href="/assets/css/blog.css?v={{app.ctx.ASSET_VERSION}}" as="style">
+<link rel="stylesheet" type="text/css" href="/assets/css/blog.css?v={{app.ctx.ASSET_VERSION}}">
 {%- block child_block_include -%}{%- endblock -%}
 {% endblock %}
 {% block title -%}

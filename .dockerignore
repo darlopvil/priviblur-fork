@@ -21,6 +21,7 @@ screenshots/
 instances.md
 requirements-dev.txt
 
-# OJO: .git/ NO se excluye a proposito.
-# docker/Dockerfile hace COPY ./.git/ para sacar el hash del commit en
-# src/version.py. Si se excluye, el build falla. Ver issue #16.
+# El repositorio git ya no hace falta dentro de la imagen: el hash del commit
+# se inyecta con --build-arg PRIVIBLUR_COMMIT (ver docker/Dockerfile).
+.git/
+.gitignore

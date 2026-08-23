@@ -16,7 +16,7 @@ from . import routes, priviblur_extractor, preferences, i18n
 from .exceptions import error_handlers
 from .config import load_config
 from .helpers import setup_logging, helpers, render, ext_npf_renderer
-from .version import VERSION, CURRENT_COMMIT
+from .version import VERSION, CURRENT_COMMIT, ASSET_VERSION
 
 
 # Load configuration file
@@ -42,7 +42,8 @@ app.config.TEMPLATING_PATH_TO_TEMPLATES = "src/templates"
 
 app.ctx.LOGGER = logging.getLogger("priviblur")
 
-app.ctx.CURRENT_COMMIT = CURRENT_COMMIT  # Used for cache busting
+app.ctx.CURRENT_COMMIT = CURRENT_COMMIT
+app.ctx.ASSET_VERSION = ASSET_VERSION  # Used for cache busting
 app.ctx.NPF_RENDERER_VERSION = NPF_RENDERER_VERSION
 app.ctx.VERSION = VERSION
 
