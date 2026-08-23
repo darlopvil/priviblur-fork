@@ -5,6 +5,7 @@ Inspired by Invidious' version for YouTube
 """
 
 import json
+import ssl
 import urllib.parse
 from typing import Optional
 
@@ -15,6 +16,37 @@ from .. import helpers
 from ..helpers import exceptions
 
 logger = helpers.LOGGER.getChild("api")
+
+
+def create_tumblr_ssl_context() -> ssl.SSLContext:
+    """Builds the SSL context used for every connection to Tumblr.
+
+    aiohttp's default context advertises ALPN as "http/1.1" and nothing else.
+    That ALPN extension, combined with the extension set of Python's OpenSSL
+    ClientHello, makes Automattic's edge (the CDN sitting in front of Tumblr)
+    drop the TCP connection right after the TLS handshake, without sending a
+    single byte back. aiohttp surfaces that as ServerDisconnectedError.
+
+    Building the context ourselves and *not* calling set_alpn_protocols()
+    leaves the ALPN extension out of the ClientHello entirely, and the edge
+    answers normally.
+
+    Measured JA4 fingerprints, same machine, same IP, same minute:
+
+        aiohttp default : t13d3013h1_1d37bd780c83_ecd0401ec68b  -> connection reset
+        this context    : t13d301200_1d37bd780c83_ecd0401ec68b  -> 200 OK
+        curl 8.18       : t13d3013h2_1d37bd780c83_8537cf56674e  -> 200 OK
+
+    Do NOT "simplify" this by dropping the custom context or by adding ALPN
+    back in: every single request to Tumblr will break, and the failure looks
+    like a network problem rather than a code change.
+
+    HTTP/2 is not a way out either: Tumblr negotiates h2 and then resets the
+    stream with PROTOCOL_ERROR.
+
+    See issue #1.
+    """
+    return ssl.create_default_context()
 
 
 class TumblrAPI:
@@ -37,10 +69,15 @@ class TumblrAPI:
         if not client:
             main_request_timeout = aiohttp.ClientTimeout(main_request_timeout)
 
+            # See create_tumblr_ssl_context(): the ALPN extension aiohttp adds
+            # by default makes Automattic's edge drop the connection (issue #1)
+            connector = aiohttp.TCPConnector(ssl=create_tumblr_ssl_context())
+
             client = aiohttp.ClientSession(
                 "https://www.tumblr.com",
                 headers=cls.DEFAULT_HEADERS,
                 timeout=main_request_timeout,  # TODO allow fine-tuning the different types of timeouts
+                connector=connector,
             )
 
         return cls(client, json_loads)
