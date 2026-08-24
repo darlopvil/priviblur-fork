@@ -198,10 +198,15 @@ async def favicon_route(request):
     its translations and its stylesheets, to answer a request for an icon. That
     happened on every visit of every user. See issue #20.
     """
+    # max_age is sanic.file()'s own parameter, not a header we set ourselves.
+    # Passing the header by hand does not work: sanic.file() adds its own
+    # "cache-control: no-cache" when max_age is missing, and its setdefault is
+    # case-sensitive, so a "Cache-Control" already in headers does not stop it.
+    # The response ends up with both, and browsers honour the stricter one.
     return await sanic.file(
         "./assets/images/priviblur.png",
         mime_type="image/png",
-        headers={"Cache-Control": "public, max-age=604800"},
+        max_age=604800,
     )
 
 
