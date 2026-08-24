@@ -29,7 +29,13 @@ services:
   priviblur-valkey:
     image: valkey/valkey:8-alpine
     # Solo cache: sin persistencia a disco, asi que no hace falta volumen
-    command: valkey-server --loglevel warning --save "" --appendonly no
+    # maxmemory con politica LRU: sin limite, la cache crece hasta que expiran
+    # las claves por TTL, lo que en una maquina con poca RAM libre compite con
+    # el resto del sistema. Con el limite, Valkey descarta las claves menos
+    # usadas al llegar al tope y nunca pasa de ahi.
+    command: >
+      valkey-server --loglevel warning --save "" --appendonly no
+      --maxmemory 128mb --maxmemory-policy allkeys-lru
     restart: unless-stopped
     # Se ejecuta directamente como el usuario valkey para saltarse el chown del
     # entrypoint, que necesita CAP_CHOWN y falla con cap_drop: ALL
