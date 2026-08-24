@@ -189,6 +189,22 @@ async def robotstxt_route(request):
     return await sanic.file("./assets/robots.txt")
 
 
+@app.route("/favicon.ico")
+async def favicon_route(request):
+    """Serves the icon browsers request without being told to.
+
+    Without this route the request falls through to the generic 404 handler,
+    which renders the full error template: nearly 3 KB of HTML, with its Jinja,
+    its translations and its stylesheets, to answer a request for an icon. That
+    happened on every visit of every user. See issue #20.
+    """
+    return await sanic.file(
+        "./assets/images/priviblur.png",
+        mime_type="image/png",
+        headers={"Cache-Control": "public, max-age=604800"},
+    )
+
+
 @app.middleware("request", priority=1)
 async def before_all_routes(request):
     request.ctx.preferences = preferences.UserPreferences(
