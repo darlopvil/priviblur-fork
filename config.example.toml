@@ -103,6 +103,18 @@
     # # call.
     # allow_external_embeds = false
 
+    # # Fallback cache lifetime for proxied media, in seconds, used ONLY when
+    # # Tumblr does not send a Cache-Control of its own. Today it does send one
+    # # (measured: ten years), which makes sense because its media URLs embed a
+    # # hash of the file, so this normally does nothing. Set to 0 to disable
+    # # the fallback entirely.
+    # media_cache_max_age = 31536000
+
+    # # Maximum simultaneous connections per media client. aiohttp defaults to
+    # # 100 and there are nine media clients, so a page full of images could
+    # # open hundreds of connections at once.
+    # media_connection_limit = 16
+
 
 # # Controls default user preferences
 # [default_user_preferences]

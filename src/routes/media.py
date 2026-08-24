@@ -28,6 +28,21 @@ async def get_media(
         elif tumblr_response.status == 429:
             return sanic.response.empty(status=502)
 
+        # Tumblr already sends a long cache-control on media: measured
+        # max-age=315360000, ten years, which makes sense because its media
+        # URLs embed a hash of the file and the bytes never change. So this is
+        # only a fallback for the day it stops doing that, not an improvement
+        # over what it sends.
+        #
+        # It has to replace rather than add: Tumblr capitalises the header
+        # ("Cache-Control"), so writing a lowercase key produced a second,
+        # conflicting header and browsers apply the stricter one. See issue #25.
+        max_age = request.app.ctx.PRIVIBLUR_CONFIG.backend.media_cache_max_age
+        already_set = any(key.lower() == "cache-control" for key in priviblur_response_headers)
+
+        if max_age and tumblr_response.status == 200 and not already_set:
+            priviblur_response_headers["cache-control"] = f"public, max-age={max_age}, immutable"
+
         priviblur_response = await request.respond(headers=priviblur_response_headers)
 
         async for chunk in tumblr_response.content.iter_any():

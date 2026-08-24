@@ -28,6 +28,16 @@ class PriviblurBackendConfig(NamedTuple):
             real IP, the real user agent, and can set cookies, which defeats
             the whole point of running this. See issue #23.
 
+        media_cache_max_age: Seconds browsers may cache proxied media for.
+            Tumblr's media URLs contain a hash of the file, so the bytes at a
+            given URL never change and a long value is safe. Set to 0 to keep
+            whatever Tumblr sent. See issue #25.
+
+        media_connection_limit: Maximum simultaneous connections per media
+            client. aiohttp defaults to 100, and there are nine media clients,
+            so a page full of images could open hundreds of connections at
+            once and saturate the instance's uplink.
+
     The total timeout covers the whole operation. Splitting it lets a slow but
     working response finish while still failing fast on an unreachable host.
     """
@@ -44,3 +54,6 @@ class PriviblurBackendConfig(NamedTuple):
     authorization_token: Optional[str] = None
 
     allow_external_embeds: bool = False
+
+    media_cache_max_age: int = 31536000
+    media_connection_limit: int = 16
