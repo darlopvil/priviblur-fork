@@ -7,7 +7,7 @@ Inspired by Invidious' version for YouTube
 import json
 import ssl
 import urllib.parse
-from typing import Optional
+from typing import ClassVar, Optional
 
 import aiohttp
 
@@ -79,7 +79,7 @@ class TumblrAPI:
     # file. See issue #14.
     DEFAULT_AUTHORIZATION_TOKEN = "aIcXSOoTtqrzR8L8YEIOmBeW94c3FmbSNSWAUbxsny9KKx5VFh"
 
-    DEFAULT_HEADERS = {
+    DEFAULT_HEADERS: ClassVar[dict[str, str]] = {
         "accept": "application/json;format=camelcase",
         "user-agent": USER_AGENT,
         "accept-encoding": "gzip, deflate",
@@ -165,12 +165,12 @@ class TumblrAPI:
             result = await response.json(loads=self.json_loader)
         except Exception as e:
             if response.status != 200:
-                raise exceptions.TumblrNon200NorJSONResponse(response.status)
+                raise exceptions.TumblrNon200NorJSONResponse(response.status) from e
 
             logger.error("Failed to parse JSON response from Tumblr!")
             logger.error(f"Got error: '{type(e).__name__}'. Reason: '{getattr(e, 'message', '')}'")
 
-            raise exceptions.InitialTumblrAPIParseException(getattr(e, "message", ""))
+            raise exceptions.InitialTumblrAPIParseException(getattr(e, "message", "")) from e
 
         # Invalid response handling
         if response.status == 429:

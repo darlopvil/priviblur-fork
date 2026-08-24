@@ -2,6 +2,8 @@
 
 import datetime
 
+from typing import ClassVar
+
 from .. import helpers, models
 
 logger = helpers.LOGGER.getChild("parse")
@@ -354,7 +356,7 @@ class SignpostParser:
     # here as named constants rather than buried in a template, and unknown
     # signposts are logged so we find out when Tumblr changes them instead of
     # silently falling back. See issue #11.
-    KNOWN_TITLES = {
+    KNOWN_TITLES: ClassVar[dict[str, str]] = {
         "Hold your horses!": "restricted",
         "Woah, hang on there.": "partially_restricted",
     }

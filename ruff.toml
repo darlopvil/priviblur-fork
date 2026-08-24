@@ -2,7 +2,15 @@ line-length = 100
 target-version = "py311"
 
 [lint]
-select = ["E4", "E7", "E9", "F"]
+# Bug-detection families. Style families (D, ANN, COM) stay out on purpose:
+# they would flag hundreds of pre-existing lines without catching a single
+# real problem.
+#
+# With only E4/E7/E9/F the linter passed clean while sitting on top of a
+# raise of a bool, four deprecated datetime calls, a subprocess without check,
+# a zip without strict and an ambiguous precedence, each of which turned out to
+# be a genuine issue. See #18.
+select = ["E4", "E7", "E9", "F", "B", "PLE", "PLW", "DTZ", "RUF", "ASYNC"]
 
 [lint.per-file-ignores]
 "__init__.py" = ["F401"]

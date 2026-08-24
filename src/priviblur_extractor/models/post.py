@@ -202,7 +202,11 @@ class Post(NamedTuple):
     reblog_from: Optional[ReblogAttribution] = None
     reblog_root: Optional[ReblogAttribution] = None
 
-    community_labels: list[CommunityLabel] = []
+    # ruff suggests ClassVar here, but this is a NamedTuple field, not a class
+    # attribute: annotating it as ClassVar would drop it from the tuple and
+    # break the model. The shared mutable default is a real hazard, but fixing
+    # it means changing the public shape of Post. See #18.
+    community_labels: list[CommunityLabel] = []  # noqa: RUF012
 
     def to_json_serialisable(self):
         json_serializable = self._asdict()
