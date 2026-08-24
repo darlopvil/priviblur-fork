@@ -14,7 +14,12 @@ async def render_template(template: str = "", context: Optional[Dict[str, Any]] 
 
     jinja_context.update(getattr(request.ctx, "breq_jinja_context", {}))
 
-    if request.route and hasattr(request.route.ctx, "rss") or hasattr(request.ctx, "rss"):
+    # A request is RSS when either the route was declared with ctx_rss=True
+    # (explore, search, tagged, blogs) or the handler set it at runtime
+    # (routes/blogs/post.py). Both are legitimate, so this is an OR; the
+    # request.route check only guards the first one. Parenthesised because
+    # "a and b or c" reads ambiguously. See issue #22.
+    if (request.route and hasattr(request.route.ctx, "rss")) or hasattr(request.ctx, "rss"):
         template = getattr(request.route.ctx, "template", None) or template
         template = f"rss/{template}.xml"
         kwargs["content_type"] = "application/rss+xml"
