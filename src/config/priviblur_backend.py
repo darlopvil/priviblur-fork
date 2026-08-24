@@ -19,6 +19,15 @@ class PriviblurBackendConfig(NamedTuple):
         authorization_token: Overrides the bearer token sent to Tumblr's API.
             Unset means using TumblrAPI.DEFAULT_AUTHORIZATION_TOKEN.
 
+        allow_external_embeds: Renders embedded players (YouTube, Spotify,
+            Vimeo...) as real iframes instead of a link card.
+
+            Off by default and it should stay off on public instances: an
+            iframe loads straight from the third party in the visitor's
+            browser, bypassing the proxy entirely. The provider then sees the
+            real IP, the real user agent, and can set cookies, which defeats
+            the whole point of running this. See issue #23.
+
     The total timeout covers the whole operation. Splitting it lets a slow but
     working response finish while still failing fast on an unreachable host.
     """
@@ -33,3 +42,5 @@ class PriviblurBackendConfig(NamedTuple):
     image_read_timeout: Optional[int] = None
 
     authorization_token: Optional[str] = None
+
+    allow_external_embeds: bool = False

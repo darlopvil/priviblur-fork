@@ -92,6 +92,17 @@
     # # The "Bearer " prefix is optional.
     # authorization_token = "..."
 
+    # # Render embedded players (YouTube, Spotify, Vimeo...) as real iframes
+    # # instead of a link card pointing at the original site.
+    # #
+    # # OFF BY DEFAULT, AND IT SHOULD STAY OFF ON PUBLIC INSTANCES. An iframe
+    # # is loaded by the visitor's browser directly from the third party,
+    # # bypassing this proxy completely: the provider sees the real IP, the
+    # # real user agent, and can set cookies. On a personal instance, where you
+    # # are the only visitor and you know what you are trading away, it is your
+    # # call.
+    # allow_external_embeds = false
+
 
 # # Controls default user preferences
 # [default_user_preferences]

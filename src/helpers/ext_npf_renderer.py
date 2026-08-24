@@ -222,13 +222,18 @@ async def format_npf(
 
         render_error = None
 
+        # Off by default: an external iframe loads from the third party in the
+        # visitor's browser, bypassing the proxy. Instance owners can turn it
+        # on for their own deployment. See issue #23.
+        allow_embeds = request.app.ctx.PRIVIBLUR_CONFIG.backend.allow_external_embeds
+
         formatted = NPFFormatter(
             contents,
             layouts,
             blog_name=blog_name,
             post_id=post_id,
             url_handler=url_handler,
-            forbid_external_iframes=True,
+            forbid_external_iframes=not allow_embeds,
             request=request,
         ).format()
 

@@ -251,6 +251,14 @@ async def after_all_routes(request, response):
     response.headers["x-content-type-options"] = "nosniff"
     response.headers["referrer-policy"] = "same-origin"
 
+    # The renderer emitting an iframe is not enough: this CSP has to allow it
+    # too, or the browser blocks the frame and the option does nothing. Only
+    # widened when the instance opted in. See issue #23.
+    if app.ctx.PRIVIBLUR_CONFIG.backend.allow_external_embeds:
+        child_src = "child-src 'self' blob: https:"
+    else:
+        child_src = "child-src 'self' blob:"
+
     response.headers["content-security-policy"] = "; ".join(
         [
             "default-src 'none'",
@@ -261,7 +269,7 @@ async def after_all_routes(request, response):
             "connect-src 'self'",
             "manifest-src 'self'",
             "media-src 'self'",
-            "child-src 'self' blob:",
+            child_src,
         ]
     )
 
