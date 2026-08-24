@@ -126,12 +126,35 @@ async def initialize(app):
 
     # Initialize database
     if cache_url := app.ctx.PRIVIBLUR_CONFIG.cache.url:
+        cache_config = app.ctx.PRIVIBLUR_CONFIG.cache
+
         try:
-            app.ctx.CacheDb = redis.asyncio.from_url(cache_url, protocol=3, decode_responses=True)
+            # Short timeouts on purpose. The cache lives next door, so anything
+            # slower than a second is not worth waiting for, and while it is
+            # down every single request pays this wait before falling back to
+            # the uncached path. Measured with the cache stopped: the default
+            # timeout turned 1.9s responses into 6.4s ones. See issue #21.
+            app.ctx.CacheDb = redis.asyncio.from_url(
+                cache_url,
+                protocol=3,
+                decode_responses=True,
+                socket_connect_timeout=cache_config.connect_timeout,
+                socket_timeout=cache_config.socket_timeout,
+            )
             await app.ctx.CacheDb.ping()
-        except redis.exceptions.ConnectionError:
+        except redis.exceptions.RedisError as e:
+            # RedisError is the parent class, not just ConnectionError. A wrong
+            # password raises AuthenticationError, a server still loading a
+            # dump raises BusyLoadingError, an unsupported protocol raises
+            # ResponseError: none of those were caught, so a cache problem
+            # stopped the whole application from starting. A cache is optional
+            # by definition. See issue #24.
             app.ctx.LOGGER.error(
-                "Error: Unable to connect to Redis! Disabling cache until the problem can be fixed. Please check your configuration file and the Redis server."
+                "Error: unable to reach the cache (%s: %s). "
+                "Disabling it until the problem can be fixed. "
+                "Check the cache server and the url in your configuration file.",
+                type(e).__name__,
+                e,
             )
             app.ctx.CacheDb = None
     else:
