@@ -30,7 +30,7 @@ class UserPreferences:
 
     def replace_from_forms(self, request) -> "UserPreferences":
         """Returns updated UserPreferences class from POST form data"""
-        return self._replace(request, request.form)
+        return self._replace(request, request.form, absent_bools_are_false=True)
 
     def replace_from_query(self, request) -> "UserPreferences":
         """Returns updated UserPreferences class from request query args"""
@@ -54,7 +54,7 @@ class UserPreferences:
 
         return self
 
-    def _replace(self, request, raw_new_prefs):
+    def _replace(self, request, raw_new_prefs, absent_bools_are_false=False):
         """Returns updated UserPreferences class from values in raw_new_prefs"""
         # Get the field names of the UserPreferences dataclass
         fields = tuple(field.name for field in dataclasses.fields(UserPreferences))
@@ -64,7 +64,7 @@ class UserPreferences:
         # Also skips over unknown fields.
         raw_new_prefs = {key: value[0] for key, value in raw_new_prefs.items() if key in fields}
 
-        self.convert_value_to_python(raw_new_prefs)
+        self.convert_value_to_python(raw_new_prefs, absent_bools_are_false)
 
         # TODO provide an error message to the end user when an unknown field is set,
         # or when an value is invalid.
@@ -95,16 +95,31 @@ class UserPreferences:
             if type_ is bool:
                 fields_dict[attribute] = "on" if getattr(self, attribute) else "off"
 
-    def convert_value_to_python(self, fields_dict):
+    def convert_value_to_python(self, fields_dict, absent_bools_are_false=False):
         """Processes fields_dict attribute values to python datatypes based on corresponding types
 
         Examines PEP 526 __annotations__ to do so.
 
         Example: Convert "on"/"off" strings to Python bools
+
+        fields_dict only holds the keys that came in the request, so indexing
+        every annotated attribute raised KeyError and turned any incomplete
+        request into a 500. See issue #26.
+
+        absent_bools_are_false follows HTML form semantics: browsers do not
+        send unchecked checkboxes at all, so a missing boolean in a submitted
+        form means False. Everywhere else a missing key means "leave this
+        preference alone", which is what dataclasses.replace does when the key
+        is not there.
         """
         for attribute, type_ in self.__annotations__.items():
-            if type_ is bool:
-                fields_dict[attribute] = True if fields_dict[attribute] == "on" else False
+            if type_ is not bool:
+                continue
+
+            if attribute in fields_dict:
+                fields_dict[attribute] = fields_dict[attribute] == "on"
+            elif absent_bools_are_false:
+                fields_dict[attribute] = False
 
     def construct_cookie(self, request):
         """Serializes user preferences into a cookie"""
