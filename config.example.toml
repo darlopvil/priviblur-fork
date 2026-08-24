@@ -36,6 +36,13 @@
     # # The redis:// scheme is correct for Valkey too: it speaks the same
     # # protocol and the Python client is the same one.
 
+    # # Seconds to wait when opening the connection to the cache, and seconds
+    # # to wait for a reply once connected. Both are deliberately short: the
+    # # cache is local, and while it is down every request pays the connect
+    # # timeout before falling back to serving without cache.
+    # connect_timeout = 1
+    # socket_timeout = 2
+
     # # Number of seconds to cache poll results from active polls
     # cache_active_poll_results_for = 3600
 
