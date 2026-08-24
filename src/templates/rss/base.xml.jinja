@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<rss xmlns:atom="http://www.w3.org/2005/Atom" xmlns:media="http://search.yahoo.com/mrss/" version="2.0"{% if request.app.ctx.PRIVIBLUR_CONFIG.deployment.domain %} xml:base="{{request.app.ctx.PRIVIBLUR_CONFIG.deployment.domain}}" {%endif%}>
+<rss xmlns:atom="http://www.w3.org/2005/Atom" xmlns:media="http://search.yahoo.com/mrss/" version="2.0"{% if request.app.ctx.PRIVIBLUR_CONFIG.deployment.base_url %} xml:base="{{request.app.ctx.PRIVIBLUR_CONFIG.deployment.base_url}}" {%endif%}>
   <channel>
     <title>{%block title%}{%endblock%} {{translate(request.ctx.language, "page_title_suffix")}}</title>
     <description>{%block description%}{%endblock%}</description>

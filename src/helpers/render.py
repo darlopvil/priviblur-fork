@@ -27,7 +27,7 @@ async def render_template(template: str = "", context: Optional[Dict[str, Any]] 
         if not (page_url := getattr(request.ctx, "page_url", None)):
             base_path = request.app.url_for(request.endpoint[:-4], **request.match_info)
 
-            page_url = f"{request.app.ctx.PRIVIBLUR_CONFIG.deployment.domain or ''}{base_path}"
+            page_url = f"{request.app.ctx.PRIVIBLUR_CONFIG.deployment.base_url}{base_path}"
             if request.query_string:
                 page_url += f"?{request.query_string}"
 

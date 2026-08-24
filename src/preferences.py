@@ -120,7 +120,17 @@ class UserPreferences:
             "max_age": 31540000,
         }
 
-        if request.app.ctx.PRIVIBLUR_CONFIG.deployment.domain:
-            cookie["domain"] = request.app.ctx.PRIVIBLUR_CONFIG.deployment.domain
+        # The Domain attribute is deliberately NOT set. deployment.domain is a
+        # hostname used to build absolute URLs, and reusing it here has two
+        # problems: it widens the cookie to every subdomain, so an instance
+        # configured with the bare apex would leak its settings cookie to every
+        # other service under it; and switching an existing deployment from
+        # host-only to Domain-scoped creates a SECOND cookie instead of
+        # replacing the first, leaving the old one to win and the user unable
+        # to change their settings.
+        #
+        # Without it the cookie is host-only, scoped to whatever host served
+        # the page, which is what every instance already gets today.
+        # See issue #19.
 
         return cookie

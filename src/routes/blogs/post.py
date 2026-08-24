@@ -74,7 +74,7 @@ async def handle_post_args(request):
     if (rss_feed := args.get("rss_feed")) and sanic.utils.str_to_bool(rss_feed):
         request.ctx.rss = True
         request.ctx.page_url = (
-            f"{request.app.ctx.PRIVIBLUR_CONFIG.deployment.domain or ''}{request.ctx.post_path}"
+            f"{request.app.ctx.PRIVIBLUR_CONFIG.deployment.base_url}{request.ctx.post_path}"
         )
 
     # Requesting post notes?

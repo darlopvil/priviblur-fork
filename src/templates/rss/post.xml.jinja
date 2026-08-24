@@ -1,4 +1,4 @@
-{%- set post_url = (request.app.ctx.PRIVIBLUR_CONFIG.deployment.domain or "") + "/" + post.blog.name|e + "/" + post.id | e -%}
+{%- set post_url = request.app.ctx.PRIVIBLUR_CONFIG.deployment.base_url + "/" + post.blog.name|e + "/" + post.id | e -%}
 {%- if post.slug -%}
     {%- set post_url = post_url + "/" + post.slug | e -%}
 {%- endif -%}

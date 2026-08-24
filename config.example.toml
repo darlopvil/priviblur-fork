@@ -3,9 +3,18 @@
     host = "0.0.0.0" # Set to 127.0.0.1 if you use a reverse proxy, or access it locally
     port = 8000
 
-    # # Domain which the instance is hosted. By default it is unset.
-    # # This is primary used to generate links to the instance
-    # domain =
+    # # Hostname under which the instance is hosted, WITHOUT a scheme.
+    # # Correct:   domain = "priviblur.example.com"
+    # # Incorrect: domain = "https://priviblur.example.com"
+    # #
+    # # Used both as the Domain attribute of the settings cookie, which must be
+    # # a bare hostname, and as the prefix of absolute URLs in feeds, whose
+    # # scheme is taken from the `https` option below.
+    # #
+    # # By default it is unset, which means relative URLs and a cookie scoped
+    # # to whatever host served the page. That works for browsing; set it if you
+    # # care about the feeds being consumed elsewhere.
+    # domain = "priviblur.example.com"
 
     # Enables secure cookies and forces all links
     # to priviblur to use the `https://` scheme
