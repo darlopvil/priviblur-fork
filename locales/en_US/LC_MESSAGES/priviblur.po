@@ -401,3 +401,12 @@ msgstr "Failed to render the contents of this post"
 
 msgid "alert_error_on_rendering_post_contents"
 msgstr "The contents of this post has failed to render due to an error. Check below for more information"
+
+msgid "embed_view_on_priviblur"
+msgstr "View on Priviblur"
+
+msgid "embed_error_post_not_found"
+msgstr "This post could not be found. It may have been deleted."
+
+msgid "embed_error_generic"
+msgstr "This post could not be loaded right now."

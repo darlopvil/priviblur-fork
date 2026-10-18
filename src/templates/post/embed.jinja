@@ -1,0 +1,49 @@
+{#- Compact, script-free view of a single post, meant to be loaded inside an
+    iframe on another site. It deliberately does not extend base.jinja: no
+    navbar, no page footer, no JavaScript. See issue #27. -#}
+{% from 'post/components/header.jinja' import create_post_header %}
+<!DOCTYPE html>
+<html lang="{{ request.ctx.language | replace('_', '-') }}">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="referrer" content="no-referrer">
+    <meta name="robots" content="noindex">
+    {#- Every link opens in a new tab instead of navigating the iframe -#}
+    <base target="_blank">
+    <link rel="icon" type="image/png" href="/assets/images/priviblur.png?v={{app.ctx.ASSET_VERSION}}">
+    <link rel="stylesheet" type="text/css" href="/assets/css/base.css?v={{app.ctx.ASSET_VERSION}}">
+    <link rel="stylesheet" type="text/css" href="/assets/css/base-post-layout.css?v={{app.ctx.NPF_RENDERER_VERSION}}">
+    <link rel="stylesheet" type="text/css" href="/assets/css/post.css?v={{app.ctx.ASSET_VERSION}}">
+    <link rel="stylesheet" type="text/css" href="/assets/css/post-layout.css?v={{app.ctx.ASSET_VERSION}}">
+    <link rel="stylesheet" type="text/css" href="/assets/css/embed.css?v={{app.ctx.ASSET_VERSION}}">
+    <title>{% if element %}{{ element.blog.name }}{% endif %} {{ translate(request.ctx.language, "page_title_suffix") }}</title>
+</head>
+<body class="embed
+{%- if theme == "light" %} light-theme
+{%- elif theme == "dark" %} dark-theme
+{%- else %} default-theme
+{%- endif -%}">
+{%- if element -%}
+    {%- set post_url = element.blog.name|e + "/" + element.id|e -%}
+    {%- if element.slug -%}
+        {%- set post_url = post_url + "/" + element.slug|e -%}
+    {%- endif -%}
+    <div class="post" data-post-id="{{element.id}}">
+        {{- create_post_header(request, element, use_this_post_url=post_url) -}}
+        {% include 'post/components/body.jinja' %}
+        <footer class="post-footer embed-footer">
+            <a class="note-count" href="/{{post_url}}?note_viewer={{element.default_note_viewer_tab}}">
+                {{- translate(request.ctx.language, "post_note_count", element.note_count, element.note_count | format_decimal(locale=request.ctx.language)) -}}
+            </a>
+            <a class="embed-view-link" href="/{{post_url}}">{{ translate(request.ctx.language, "embed_view_on_priviblur") }}</a>
+        </footer>
+    </div>
+{%- else -%}
+    <div class="post embed-error">
+        <p>{{ error_message }}</p>
+        <a class="embed-view-link" href="{{ fallback_url }}">{{ translate(request.ctx.language, "embed_view_on_priviblur") }}</a>
+    </div>
+{%- endif -%}
+</body>
+</html>

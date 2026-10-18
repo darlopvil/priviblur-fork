@@ -259,6 +259,15 @@ async def after_all_routes(request, response):
     else:
         child_src = "child-src 'self' blob:"
 
+    # Only routes declared with ctx_embeddable=True (the post embed view) may
+    # be framed by other sites. Everything else is limited to this instance,
+    # which closes clickjacking on pages like /settings: nothing in Priviblur
+    # frames itself, so 'self' costs nothing. See issue #27.
+    if request.route and getattr(request.route.ctx, "embeddable", False):
+        frame_ancestors = "frame-ancestors *"
+    else:
+        frame_ancestors = "frame-ancestors 'self'"
+
     response.headers["content-security-policy"] = "; ".join(
         [
             "default-src 'none'",
@@ -270,6 +279,7 @@ async def after_all_routes(request, response):
             "manifest-src 'self'",
             "media-src 'self'",
             child_src,
+            frame_ancestors,
         ]
     )
 

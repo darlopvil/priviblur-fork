@@ -264,3 +264,12 @@ msgstr "No se puede copiar"
 
 msgid "priviblur_licences_page_title"
 msgstr "Licencias"
+
+msgid "embed_view_on_priviblur"
+msgstr "Ver en Priviblur"
+
+msgid "embed_error_post_not_found"
+msgstr "No se ha encontrado este post. Puede que lo hayan borrado."
+
+msgid "embed_error_generic"
+msgstr "No se ha podido cargar este post ahora mismo."

@@ -1,6 +1,8 @@
+import asyncio
 import enum
 import urllib.parse
 
+import aiohttp
 import sanic
 
 from ... import cache, priviblur_extractor
@@ -245,3 +247,60 @@ async def blog_post_like_notes(request: sanic.Request, blog: str, post_id: str, 
             "notes": parsed_notes,
         },
     )
+
+
+# The embed view lives in its own blueprint on purpose. blog_post_bp runs two
+# on_request hooks on every route it owns: one redirects to the canonical slug
+# (so "/<post_id>/embed" would bounce to "/<post_id>/<slug>"), the other
+# handles note viewers and RSS. Neither applies to an embed. Sanic resolves the
+# static "embed" segment before the dynamic "<slug>" one, so the full post
+# routes keep working. See issue #27.
+blog_post_embed_bp = sanic.Blueprint("blog_post_embed", url_prefix="/<post_id:int>")
+
+EMBED_THEMES = ("light", "dark")
+
+
+@blog_post_embed_bp.get("/embed", name="_blog_post_embed", ctx_embeddable=True)
+async def _blog_post_embed(request: sanic.Request, blog: str, post_id: int):
+    """Compact, script-free view of a single post, meant to live in an iframe
+
+    Errors are rendered inline in the same compact layout instead of through
+    the global error handlers, which would drop a full Priviblur page with
+    navbar and footer inside someone else's iframe.
+    """
+    blog = urllib.parse.unquote(blog)
+    exceptions = priviblur_extractor.priviblur_exceptions
+
+    # Third-party iframes do not get the SameSite=Lax settings cookie, so the
+    # embedding site can ask for a theme explicitly to match its own.
+    theme = request.args.get("theme")
+    if theme not in EMBED_THEMES:
+        theme = None
+
+    context = {"app": request.app, "theme": theme, "element": None, "error_message": None}
+
+    try:
+        post = (await cache.get_blog_post(request.app.ctx, blog, post_id)).elements[0]
+    except exceptions.TumblrBlogNotFoundError:
+        # Tumblr answers a deleted post the same way it answers a missing blog
+        error_key, status = "embed_error_post_not_found", 404
+    except exceptions.TumblrLoginRequiredError:
+        error_key, status = "tumblr_error_blog_login_required_error_heading", 403
+    except exceptions.TumblrPasswordRequiredBlogError:
+        error_key, status = "tumblr_error_blog_requires_password_error_heading", 403
+    except (
+        exceptions.TumblrErrorResponse,
+        exceptions.TumblrNon200NorJSONResponse,
+        exceptions.TumblrRatelimitReachedError,
+        asyncio.TimeoutError,
+        aiohttp.ClientError,
+        IndexError,
+    ):
+        error_key, status = "embed_error_generic", 502
+    else:
+        context["element"] = post
+        return await request.app.ctx.render("post/embed", context=context)
+
+    context["error_message"] = request.app.ctx.translate(request.ctx.language, error_key)
+    context["fallback_url"] = f"/{blog}/{post_id}"
+    return await request.app.ctx.render("post/embed", context=context, status=status)

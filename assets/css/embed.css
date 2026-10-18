@@ -1,0 +1,51 @@
+/* Compact single-post view for iframes on other sites. Builds on base.css and
+   post.css (theme variables, post layout, NPF blocks) and only overrides what
+   makes no sense inside a frame. See issue #27. */
+
+body.embed {
+    background: transparent;
+}
+
+/* Fluid width: the embedding site decides the size of the frame */
+.embed .post {
+    border-radius: 0;
+    padding: 16px;
+}
+
+/* Media never overflows the frame */
+.embed img,
+.embed video,
+.embed iframe {
+    max-width: 100%;
+    height: auto;
+}
+
+/* The embed ships no JavaScript, so controls that need it are hidden. Mature
+   content still unblurs on hover through the existing .no-js rules. */
+.embed .with-js {
+    display: none;
+}
+
+.embed .embed-footer {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    margin-top: 5px;
+    color: var(--color-post-footer-post-interaction);
+}
+
+.embed .note-count:hover,
+.embed .embed-view-link:hover {
+    text-decoration: underline;
+}
+
+.embed .embed-view-link {
+    font-weight: 600;
+    color: var(--color-logo);
+}
+
+.embed-error {
+    gap: 10px;
+    color: var(--color-text);
+}
